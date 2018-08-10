@@ -12,11 +12,10 @@ import {
 import UserModel from "./source/model/UserModel";
 import {SubmitButton, TextBordered} from "./source/Common/vendor/ui/ActiveForm";
 
-type Props = {};
 export default class App extends Component<Props> {
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
             params: {},
             error: {},

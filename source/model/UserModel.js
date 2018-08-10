@@ -1,3 +1,4 @@
+//user model example
 import {Model} from "../Common/vendor/Model"
 import Translate from "../Common/vendor/Translate";
 
@@ -6,7 +7,7 @@ export default class UserModel extends Model {
     static _FULL_NAME="fullName";//scenario for require full name
     constructor(createTable = true) {
         super();
-        this.getUrl(['user/data']);
+        this.getUrl(['user','data'],);
         if (createTable) {
             this.createTable();
         }
