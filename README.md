@@ -140,7 +140,7 @@ export default class App extends Component<Props> {
         this.model.setScenario(UserModel._FULL_NAME);//set scenario to require fullName
         if (await this.model.save(this, true)) {
             console.warn('success');
-            this.model.unload(this.state.params);//if you want redirect this line is not require
+            this.model.unload(this.state.params);//if you don't want clean the form it's not require
             this.setState({//clean form
                 params:{},
             });
