@@ -105,10 +105,10 @@ export class LoadingDialog extends Component {
     }
 
     show() {
-        this.dialogComponent.show();
+        // this.dialogComponent.show();
     }
     close(){
-        this.dialogComponent.dismiss();
+        // this.dialogComponent.dismiss();
     }
 
 

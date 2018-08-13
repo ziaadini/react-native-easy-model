@@ -27,9 +27,8 @@ export class Overlay extends React.Component {
         super(props);
 
         this.state = {
-            fadeShadow: false,
+            fadeShadow: true,
         };
-
 
         let top = 150;
         let left = 20;
@@ -68,24 +67,19 @@ export class Overlay extends React.Component {
         });
     }
 
-    componentWillReceiveProps() {
-        if (this.isOpen) {
-            setTimeout(() => {
-                this.setState({
-                    fadeShadow: true
-                });
-            }, 1000);
-        }
-    }
-
 
     setModalVisible(visible) {
         let state = {};
         state[this.props.stateName] = visible;
         state = Object.assign({}, this.props.instance.state, state);
-        this.props.instance.setState(state);
+        this.props.instance.setState(state,()=>{
+            this.setState({//initial default after close
+                fadeShadow: true
+            });
+        });
     }
-    isOpen(){
+
+    isOpen() {
         return this.props.instance.state[this.props.stateName];
     }
 
@@ -100,25 +94,25 @@ export class Overlay extends React.Component {
 
     _modalContent() {
         return (
-            <TouchableOpacity
+            <View
                 activeOpacity={1}
                 onPress={() => {
                 }}
                 style={[this.styles.modalContainer, this.props.containerStyle]}>
-                    <View style={[this.styles.topContainer, this.props.headerStyle]}>
-                        <Icon name="close"
-                              onPress={() => {
-                                  this.close();
-                                  // this.setModalVisible(!instance.state[stateName]);
-                              }}
-                        />
-                        <Right>
-                            {this.props.header}
-                        </Right>
-                    </View>
-                    {this.props.children}
+                <View style={[this.styles.topContainer, this.props.headerStyle]}>
+                    <Icon name="close"
+                          onPress={() => {
+                              this.close();
+                              // this.setModalVisible(!instance.state[stateName]);
+                          }}
+                    />
+                    <Right>
+                        {this.props.header}
+                    </Right>
+                </View>
+                {this.props.children}
 
-            </TouchableOpacity>
+            </View>
         );
     }
 
@@ -136,7 +130,7 @@ export class Overlay extends React.Component {
                 }}>
 
                 {this.state.fadeShadow ?
-                    <TouchableOpacity
+                    <View
                         activeOpacity={1}
                         onPress={() => {
                             if (this.closeOut)
@@ -144,7 +138,7 @@ export class Overlay extends React.Component {
                         }}
                         style={{width: "100%", height: '100%', backgroundColor: "rgba(5, 5, 10, 0.7)"}}>
                         {this._modalContent()}
-                    </TouchableOpacity>
+                    </View>
                     :
                     this._modalContent()
                 }

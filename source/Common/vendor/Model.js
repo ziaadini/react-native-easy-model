@@ -59,7 +59,6 @@ export class Model {
     }
 
 
-
     unload(obj, formName = null, runValidation = false) {
         let rules = this.rules();
         if (!formName) {
@@ -103,6 +102,7 @@ export class Model {
             this[field] = obj[field];
         }
     }
+
     removeFieldFromObject(obj, field) {
         if (field in obj) {
             delete this[field];
@@ -353,6 +353,25 @@ export class Model {
 
     }
 
+    static async deleteAll() {
+        // let pk = this._findPrimary();
+        let query = `DELETE FROM ${this.tableName()}`;
+        let params = [];
+
+        this.openDb();
+        let root = this;
+        return new Promise(function (resolve, reject) {
+            root.db.transaction((txn) => {
+                txn.executeSql(query, params, (success) => {
+                    resolve(true);
+                }, (error) => {
+                    console.log(error);
+                    resolve(false)
+                });
+            });
+        });
+    }
+
     __generateInsertQuery() {
         let table = this.constructor.table();
         let insert = "";
@@ -480,15 +499,16 @@ export class Model {
         return true;
     }
 
-    static  isNumeric(n) {
+    static isNumeric(n) {
         return !isNaN(parseFloat(n)) && isFinite(n);
     }
+
     static empty(obj) {
         if (!obj) {
             return true;
         }
-        if(typeof obj==="string"||this.isNumeric(obj)){//zero is empty? yes
-            if(obj){
+        if (typeof obj === "string" || this.isNumeric(obj)) {//zero is empty? yes
+            if (obj) {
                 return false;
             }
         }
@@ -534,49 +554,52 @@ export class Model {
     setRule(att, value, ruleItem) {
         let scenario = "default";
         let skip = this.skipOnEmpty;
-
+        let when = true;
         if (ruleItem.skipOnEmpty !== undefined) {
             skip = ruleItem.skipOnEmpty;
         }
         if (ruleItem.on !== undefined) {
             scenario = ruleItem.on;
         }
+        if (ruleItem.when !== undefined) {
+            when = ruleItem.when;
+        }
 
         if (!this._isFieldInScenario(att)) {
             return;
         }
 
-        if (scenario === "default" || scenario === this.scenario) {
+        if ((scenario === "default" || scenario === this.scenario) && when) {
             switch (ruleItem.rule) {
                 case "required":
                     this.required(att, value);
                     break;
                 case "unique":
-                    if(ruleItem.skipOnEmpty&&!this._hasValue(value)){
+                    if (ruleItem.skipOnEmpty && !this._hasValue(value)) {
                         break;
                     }
                     this.__unique(att, value);
                     break;
                 case "email":
-                    if(skip&&!this._hasValue(value)){
+                    if (skip && !this._hasValue(value)) {
                         break;
                     }
                     this.__email(att, value);
                     break;
                 case "number":
-                    if(skip&&!this._hasValue(value)){
+                    if (skip && !this._hasValue(value)) {
                         break;
                     }
                     this.__number(att, value, ruleItem.max, ruleItem.min, ruleItem.exact);
                     break;
                 case "integer":
-                    if(skip&&!this._hasValue(value)){
+                    if (skip && !this._hasValue(value)) {
                         break;
                     }
                     this.__integer(att, value, ruleItem.max, ruleItem.min, ruleItem.exact);
                     break;
                 case "string":
-                    if(skip&&!this._hasValue(value)){
+                    if (skip && !this._hasValue(value)) {
                         break;
                     }
                     this.__string(att, value, ruleItem.maxLength, ruleItem.minLength);
@@ -589,12 +612,13 @@ export class Model {
         this.error[att] = error;
     }
 
-    _hasValue(value){
-        if(!value){
+    _hasValue(value) {
+        if (!value) {
             return false;
         }
         return value || value.length > 0;
     }
+
     required(att, value) {
         if (!this._hasValue(value)) {
             this.addError(att, this.__translate(att, "_required_"), true);
@@ -686,12 +710,18 @@ export class Model {
     }
 
 
-    getError() {
-        return this.error;
+    getError(field = null) {
+        if (field === null)
+            return this.error;
+        else
+            return this.error[field];
     }
 
-    hasError(){
-        return !this.constructor.empty(this.getError());
+    hasError(field = null) {
+        if (field === null)
+            return !this.constructor.empty(this.getError());
+        else
+            return !this.constructor.empty(this.getError()) && !this.constructor.empty(this.getError()[field]);
     }
 
     __translate(att, rule, validValue1 = "", validValue2 = "") {
@@ -717,7 +747,8 @@ export class Model {
             });
         }
     }
-    loadServerError(response){
+
+    loadServerError(response) {
         let data = response.data;
         for (let key in data) {
             this.addError(data[key].field, data[key].message);

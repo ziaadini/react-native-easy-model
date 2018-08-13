@@ -4,8 +4,8 @@ import {getTime} from "../constant/func";
 import {Model} from "./Model";
 
 export const oAuth2Config = {
-    client_id: 'mobit_plus_app_ddD@dffdAH!rbvGgn',
-    client_secret: 'ASx@sdsdF_DVDV1sd.ssAq@?q!Trvfhg',
+    client_id: 'app_ddD@dffdAH!rbvGgn',
+    client_secret: 'dsdF_DVDV1sd.ssAq@?q!Trvfhg',
     // grant_type: 'password',
     // grant_type: 'refresh_token',
 };

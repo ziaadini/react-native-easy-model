@@ -1,8 +1,8 @@
 import React from 'react';
-import {View, Text, TextInput, StyleSheet, Switch, Platform, TouchableOpacity, I18nManager,} from 'react-native';
-import {Button, CheckBox, Icon, Radio, Spinner, Label, Picker} from "native-base";
+import {View, Text, TextInput, StyleSheet, Switch, Platform, TouchableOpacity, I18nManager, } from 'react-native';
+import {Button, CheckBox, Icon, Radio, Spinner, Label,Picker} from "native-base";
 import {Icons} from "../../config/main";
-import {empty, mapObject} from '../Helper';
+import {mapObject} from '../Helper';
 
 
 const style = StyleSheet.create({
@@ -43,7 +43,7 @@ export class TxtInput extends React.Component {
                     {...this.props}
                     style={[style.txtInput, {...this.props.style}]}
                 />
-                {handleError(instance, this.props)}
+                <Text>{instance.state.error[name]}</Text>
             </View>
         );
 
@@ -60,6 +60,7 @@ const styles = StyleSheet.create({
         borderTopWidth: 1,
         borderRightWidth: 1,
         borderLeftWidth: 1,
+        borderColor: 'gray',
     },
     inputStyle: {
         flex: 1,
@@ -99,9 +100,6 @@ const styles = StyleSheet.create({
  error: {}
  };
 
- showError  =>by default is true
- red        => if true -> even showError is false border is red.
-
  */
 
 export class TextBordered extends React.Component {
@@ -119,10 +117,10 @@ export class TextBordered extends React.Component {
 
     render() {
         const {instance, name} = this.props;
-        let b_color = borderColor(instance, this.props);
+
         return (
             <View style={this.props.style ? this.props.style : {}}>
-                <View style={[styles.container, {borderColor: b_color,}]}>
+                <View style={[styles.container]}>
                     <TextInput
                         onChangeText={(val) => {
                             this.changeText(val)
@@ -145,7 +143,12 @@ export class TextBordered extends React.Component {
                         : false
                     }
                 </View>
-                {handleError(instance, this.props)}
+                {instance.state.error && instance.state.error[name] ?
+                    <View style={styles.errorContainer}>
+                        <Text style={styles.errorText}>{instance.state.error[name]}</Text>
+                        <Icon style={styles.errorIcon} name={Icons.Error.name} type={Icons.Error.type}/>
+                    </View>
+                    : false}
             </View>
         );
 
@@ -153,8 +156,9 @@ export class TextBordered extends React.Component {
 }
 
 const activePickerStyle = StyleSheet.create({
-    pickerContainer: {
+    viewPicker:{
         borderWidth: 1,
+        borderColor: 'gray',
     },
     itemStyle: {
         flexDirection: 'row-reverse',
@@ -213,7 +217,7 @@ export class ActivePicker extends React.Component {
         if (Platform.OS === 'ios') {
             return (
                 <Picker
-                    style={[{flexDirection: 'row-reverse', justifyContent: 'center', alignItems: 'center'}]}
+                    style={[{flexDirection: 'row-reverse'}]}
                     mode="dropdown"
                     iosIcon={<Icon name="ios-arrow-down-outline"/>}
                     itemStyle={[activePickerStyle.itemStyle, this.props.itemStyle]}
@@ -234,10 +238,6 @@ export class ActivePicker extends React.Component {
         } else {
             return (
                 <Picker
-                    style={{
-                        flexDirection: 'row-reverse',
-                        justifyContent: 'flex-end', alignItems: 'flex-end',
-                    }}
                     mode="dropdown"
                     placeholderStyle={{color: "#bfc6ea"}}
                     placeholderIconColor="#007aff"
@@ -263,13 +263,16 @@ export class ActivePicker extends React.Component {
 
     render() {
         const {instance, name} = this.props;
-        let b_color = borderColor(instance, this.props);
         return (
             <View style={this.props.style ? this.props.style : {}}>
-                <View style={[activePickerStyle.pickerContainer, {borderColor: b_color}]}>
+                <View style={activePickerStyle.viewPicker}>
                     {this.selectOS()}
                 </View>
-                {handleError(instance, this.props)}
+                {instance.state.error && instance.state.error[name] ?
+                    <View style={styles.errorContainer}>
+                        <Text style={styles.errorText}>{instance.state.error[name]}</Text>
+                        <Icon style={styles.errorIcon} name={Icons.Error.name} type={Icons.Error.type}/>
+                    </View>: false}
             </View>
         );
 
@@ -370,7 +373,12 @@ export class TextArea extends React.Component {
                         : false
                     }
                 </View>
-                {handleError(instance, this.props)}
+                {instance.state.error && instance.state.error[name] ?
+                    <View style={areaStyles.errorContainer}>
+                        <Text style={areaStyles.errorText}>{instance.state.error[name]}</Text>
+                        <Icon style={areaStyles.errorIcon} name={Icons.Error.name} type={Icons.Error.type}/>
+                    </View>
+                    : false}
             </View>
         );
 
@@ -401,24 +409,25 @@ export class SubmitButton extends React.Component {
 
     constructor(props) {
         super(props);
+        // if(this.props.style){
+        //     if(Array.isArray(this.props.style)){
+        //         this.btnStyle=this.props.style.slice();
+        //         this.btnStyle.push(submitStyle.button)
+        //     }
+        // }else{
+        //     this.btnStyle=submitStyle.button;
+        // }
         this.loading = "loading";
         if (this.props.loading) {
             this.loading = this.props.loading;
         }
-        // this.btnStyle=[submitStyle.button];
-        // if(Array.isArray(this.props.style)){
-        //     Array.prototype.push.apply(this.btnStyle, this.props.style);
-        // }else{
-        //     this.btnStyle.push(this.props.style);
-        // }
-        this.btnStyle = pushToStyle(submitStyle.button, this.props.style);
     }
 
     render() {
         return (
             <Button
                 {...this.props}
-                style={this.btnStyle}
+                style={[submitStyle.button, this.props.style]}
             >
 
                 {}
@@ -500,7 +509,12 @@ export class RadioList extends React.Component {
                         </View>
                     );
                 })}
-                {handleError(instance, this.props)}
+                {instance.state.error && instance.state.error[name] ?
+                    <View style={styles.errorContainer}>
+                        <Text style={styles.errorText}>{instance.state.error[name]}</Text>
+                        <Icon style={styles.errorIcon} name={Icons.Error.name} type={Icons.Error.type}/>
+                    </View>
+                    : false}
             </View>
         );
 
@@ -572,35 +586,38 @@ export class ActiveSwitch extends React.Component {
         const {instance, name} = this.props;
         let val = this.getValue();
         return (
-            <View>
-                <View
-                    style={[switchStyle.container, this.props.style]}
-                >
-                    <View style={{flexDirection: 'row-reverse', alignItems: 'center'}}>
-                        <Switch
-                            {...this.props}
-                            onValueChange={(value) => {
-                                this.changeValue(value)
-                            }}
-                            value={val}
-                        />
+            <View
+                style={[switchStyle.container, this.props.style]}
+            >
+                <View style={{flexDirection: 'row-reverse', alignItems: 'center'}}>
+                    <Switch
+                        {...this.props}
+                        onValueChange={(value) => {
+                            this.changeValue(value)
+                        }}
+                        value={val}
+                    />
 
 
-                    </View>
-
-                    <TouchableOpacity onPress={() => {
-                        this.changeValue(!val)
-                    }}
-                    >
-                        {this.props.label ?
-                            <Text
-                                style={[checkStyle.label, this.props.labelStyle]}>
-                                {this.props.label}
-                            </Text>
-                            : this.props.jsx}
-                    </TouchableOpacity>
                 </View>
-                {handleError(instance, this.props)}
+                {instance.state.error && instance.state.error[name] ?
+                    <View style={styles.errorContainer}>
+                        <Text style={styles.errorText}>{instance.state.error[name]}</Text>
+                        <Icon style={styles.errorIcon} name={Icons.Error.name} type={Icons.Error.type}/>
+                    </View>
+                    : false}
+                <TouchableOpacity onPress={() => {
+                    this.changeValue(!val)
+                }}
+                                  style={{width: '100%'}}
+                >
+                    {this.props.label ?
+                        <Text
+                            style={[checkStyle.label, this.props.labelStyle]}>
+                            {this.props.label}
+                        </Text>
+                        : this.props.jsx}
+                </TouchableOpacity>
             </View>
         );
 
@@ -610,11 +627,10 @@ export class ActiveSwitch extends React.Component {
 const checkStyle = StyleSheet.create({
 
     label: {
-        marginRight: 8
+        marginRight: 5
     },
     container: {
-        flexDirection: 'row-reverse',
-        alignItems: 'center'
+        flexDirection: 'row-reverse', alignItems: 'center'
     }
 });
 
@@ -669,38 +685,42 @@ export class ActiveCheckBox extends React.Component {
     }
 
     render() {
-        const {instance} = this.props;
+        const {instance, name, checked} = this.props;
         let val = this.getValue();
         return (
-            <View>
-                <View
-                    style={[checkStyle.container, this.props.style]}
-                >
-                    <View>
-                        <CheckBox
-                            {...this.props}
-                            style={{}}
-                            onPress={() => {
-                                this.changeValue(!val)
-                            }}
-                            checked={val}
-                        />
+            <View
+                style={[checkStyle.container, this.props.style]}
+            >
+                <View>
+                    <CheckBox
+                        {...this.props}
+                        style={{}}
+                        onPress={() => {
+                            this.changeValue(!val)
+                        }}
+                        checked={val}
+                    />
 
-                    </View>
-
-                    <TouchableOpacity onPress={() => {
-                        this.changeValue(!val)
-                    }}
-                    >
-                        {this.props.label ?
-                            <Text
-                                style={[checkStyle.label, this.props.labelStyle]}>
-                                {this.props.label}
-                            </Text>
-                            : this.props.jsx}
-                    </TouchableOpacity>
                 </View>
-                {handleError(instance, this.props)}
+                {instance.state.error && instance.state.error[name] ?
+                    <View style={styles.errorContainer}>
+                        <Text style={styles.errorText}>{instance.state.error[name]}</Text>
+                        <Icon style={styles.errorIcon} name={Icons.Error.name} type={Icons.Error.type}/>
+                    </View>
+                    : false}
+
+                <TouchableOpacity onPress={() => {
+                    this.changeValue(!val)
+                }}
+                                  style={{width: '100%'}}
+                >
+                    {this.props.label ?
+                        <Text
+                            style={[checkStyle.label, this.props.labelStyle]}>
+                            {this.props.label}
+                        </Text>
+                        : this.props.jsx}
+                </TouchableOpacity>
             </View>
         );
 
@@ -722,7 +742,6 @@ export class ActiveCheckBox extends React.Component {
 export class ActiveRadio extends React.Component {
     constructor(props) {
         super(props);
-        this.labelStyle = pushToStyle(checkStyle.label, this.props.labelStyle);
     }
 
     changeValue() {
@@ -739,114 +758,45 @@ export class ActiveRadio extends React.Component {
     }
 
     render() {
-        const {instance} = this.props;
+        const {instance, name, checked} = this.props;
         let isSelected = this.isSelected();
-        let b_color = borderColor(instance, this.props);
         return (
-            <View>
-                <View
-                    style={[checkStyle.container, this.props.style]}
-                >
-                    <View style={{flexDirection: 'row-reverse'}}>
-                        <Radio
-                            onPress={() => {
-                                this.changeValue()
-                            }}
-                            selected={isSelected}
-                            {...this.props}
-                            style={{}}
-                            selectedColor="#4285F4"
-                            color={b_color}
-                        />
-
-                    </View>
-
-                    <TouchableOpacity
+            <View
+                style={[checkStyle.container, this.props.style]}
+            >
+                <View style={{flexDirection:'row-reverse'}}>
+                    <Radio
                         onPress={() => {
-                            this.props.onPress ? this.props.onPress() : this.changeValue()
-                        }}>
-                        {this.props.label ?
-                            <Text
-                                style={[...this.labelStyle,setColor(b_color)]}>
-                                {this.props.label}
-                            </Text>
-                            : this.props.jsx}
-                    </TouchableOpacity>
+                            this.changeValue()
+                        }}
+                        selected={isSelected}
+                        {...this.props}
+                        style={{}}
+                        selectedColor="#4285F4"
+                    />
+
                 </View>
-                {handleError(instance, this.props)}
+                {instance.state.error && instance.state.error[name] ?
+                    <View style={styles.errorContainer}>
+                        <Text style={styles.errorText}>{instance.state.error[name]}</Text>
+                        <Icon style={styles.errorIcon} name={Icons.Error.name} type={Icons.Error.type}/>
+                    </View>
+                    : false}
+
+                <TouchableOpacity
+                    style={{width: '100%'}}
+                    onPress={() => {
+                        this.props.onPress ? this.props.onPress() : this.changeValue()
+                    }}>
+                    {this.props.label ?
+                        <Text
+                            style={[checkStyle.label, this.props.labelStyle]}>
+                            {this.props.label}
+                        </Text>
+                        : this.props.jsx}
+                </TouchableOpacity>
             </View>
         );
 
     }
 }
-
-/*
-showError => by default is true if you don't want show error set this to false
-
- */
-const handleError = (instance, props) => {
-    let name = props.name;
-    return (
-        <View>
-            {hasError(instance, name) && showError(instance, props) ?
-                <Error message={instance.state.error[name]}/>
-                : false}
-        </View>
-    )
-};
-const hasError = (instance, name) => {
-    return instance.state.error && instance.state.error[name];
-};
-const showError = (instance, props) => {
-    let showError = true;
-    if (props.showError !== undefined) {
-        showError = props.showError;
-    }
-    return showError;
-};
-
-const borderColor = (instance, props) => {
-    if (hasError(instance, props.name) && showError(instance, props)) {
-        if (props.red === false) {
-            return "gray";
-        }
-        return "red";
-    } else if (hasError(instance, props.name) && props.red === true) {
-        return "red";
-    }
-    return "gray";
-};
-
-const setColor=(color)=>{
-    if(color==="gray"){//if gray changed in top then should change here
-        return {};
-    }
-    return {color:color}
-};
-
-const pushToStyle = (prevStyle, newStyle) => {
-
-    if (!Array.isArray(prevStyle)) {
-        prevStyle = [prevStyle];
-    }
-    if (Array.isArray(newStyle)) {
-        Array.prototype.push.apply(prevStyle, newStyle);
-    } else {
-        prevStyle.push(newStyle);
-    }
-    return prevStyle;
-};
-
-
-export class Error extends React.Component {
-
-    render() {
-        return (
-            <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>{this.props.message}</Text>
-                <Icon style={styles.errorIcon} name={Icons.Error.name} type={Icons.Error.type}/>
-            </View>
-        );
-    };
-}
-

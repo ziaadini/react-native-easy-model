@@ -81,6 +81,7 @@ export async function _submit(instance, model, requireLogin = true, url = null, 
             load[loading] = true;
             instance.setState(load);
             try {
+                console.log(params);
                 let response = "";
                 if (requireLogin) {
                     response = await OAuth2.fetch(url, "POST", params);
