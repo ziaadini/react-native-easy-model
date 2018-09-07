@@ -1,9 +1,14 @@
 import React from 'react';
-import {View, Text, TextInput, StyleSheet, Switch, Platform, TouchableOpacity, I18nManager,} from 'react-native';
+import {View, Text, TextInput, StyleSheet, Switch, Platform, I18nManager,} from 'react-native';
 import {Button, CheckBox, Icon, Radio, Spinner, Label, Picker} from "native-base";
 import {Icons} from "../../config/main";
-import {empty, mapObject} from '../Helper';
+import {empty, mapObject, number_format} from '../Helper';
 
+// import {commonCss} from '../../../assets/css/main.css';
+
+
+import MobitPicker from './MobitPicker';
+import {Touchable} from "./Touchable";
 
 const style = StyleSheet.create({
 
@@ -76,7 +81,8 @@ const styles = StyleSheet.create({
     errorText: {
         color: 'red',
         marginRight: 5,
-        marginTop: 5
+        marginTop: 5,
+        fontFamily: 'IRANSansMobile'
     },
     errorIcon: {
         fontSize: 13, color: 'red', marginRight: 5,
@@ -99,9 +105,10 @@ const styles = StyleSheet.create({
  error: {}
  };
 
- showError  =>by default is true
- red        => if true -> even showError is false border is red.
+ showError   =>by default is true
+ red         => if true -> even showError is false border is red.
 
+ numberFormat =>if it's true show number_format in value
  */
 
 export class TextBordered extends React.Component {
@@ -127,8 +134,9 @@ export class TextBordered extends React.Component {
                         onChangeText={(val) => {
                             this.changeText(val)
                         }}
-                        value={instance.state.params[name]}
+                        value={this.props.numberFormat === true ? number_format(instance.state.params[name] + "") : instance.state.params[name]}
                         {...this.props}
+                        ref={this.props.refInner}
                         style={[styles.inputStyle, this.props.inputStyle, {
                             textAlignVertical: "top",
                         }]}
@@ -310,6 +318,176 @@ const areaStyles = StyleSheet.create({
         fontSize: 13, color: 'red', marginRight: 5,
     }
 });
+
+/*
+ name       => name you want set to sate.params
+ instance   => instance of component you want change this state
+
+ you should define inside instance component :
+ this.state={
+ params:{},
+ error: {}
+ };
+
+ data => this is data set you want show and should be like this
+ [{label:your label , value:your value},...]
+ placeholder => placeholder
+ onSelect => when item selected pass value to this method you my want override this method like this :
+ onSelect={
+ (value)=>{
+ console.log(value);
+ }
+ }
+ top =>  use in overlay
+ left => use in overlay
+ mode => mode of show overlay can get three value {'center' ,'down' , 'full'}
+ loading => display spinner front of default value
+ itemTextStyle => style for items in picker
+ defaultTextStyle => style for defaultTextValue
+ searchLen => if mode equal full => number of character to search in list
+ onEmpty => در صورتی که این پراپس override
+ شود زمانی که داده های پیکر خالی است محتوای این پراپس نمایش داده میشود
+ icon =>  در صورتی که فرستاده شود مقابل هر ایتم در پیکر ایکن ارسالی نمایش داده می شود
+ itemIconName =>name of icon that display in item picker
+ itemIconType => tyle of icon that display in item picker
+ itemIconSyle => style of icon that display in item picker
+
+ iconName => name of icon display in picker
+ iconType => type of icon display in picker
+ iconStyle => style of icon display in picker
+
+ */
+
+const activePicker2Style = StyleSheet.create({
+    container: {
+        height: 50,
+        flexDirection: 'column',
+        justifyContent: 'center',
+    },
+    loadingView: {
+        flexDirection: 'row-reverse',
+        height: '50%'
+    },
+    spinner: {
+        marginTop: -50,
+        //marginBottom: 10,
+        marginLeft: 10,
+        width: '10%'
+    },
+    border: {
+        //  borderColor: 'gray',
+        borderWidth: 1
+    },
+    viewSpinner:{
+        flexDirection:'column',
+        justifyContent:'center'
+    }
+
+});
+
+export class ActivePicker2 extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    changeValue(val) {
+        const {instance, name} = this.props;
+        let obj = [];
+        obj['params'] = instance.state.params;
+        obj['params'][name] = val.value;
+        instance.setState(Object.assign({}, instance.state, obj));
+    }
+
+    defaultValue() {
+        if (this.props.instance.state.params[this.props.name] !== undefined) {
+            let defaultVale = this.props.data
+                .filter((e) => e.value === this.props.instance.state.params[this.props.name]);
+            if (defaultVale[0]) {
+                return defaultVale[0];
+            }
+            return false;
+        }
+        return false;
+    }
+
+    render() {
+        var instance = this.props.instance;
+        let b_color = borderColor(instance, this.props);
+
+        return (
+            <View>
+                <View
+                    style={[{
+                        paddingRight: 15,
+                        width: '100%'
+                    }, activePicker2Style.container, activePicker2Style.border, {borderColor: b_color}]}>
+                    <View
+                        style={activePicker2Style.loadingView}>
+                        <View style={{width: '100%'}}>
+                            {this.props.onEmpty !== undefined ?
+                                <MobitPicker
+                                    defaultValue={this.defaultValue()}
+                                    placeholder={this.props.placeholder}
+                                    data={this.props.data}
+                                    onSelect={this.changeValue.bind(this)}
+                                    top={this.props.top}
+                                    left={this.props.left}
+                                    mode={this.props.mode}
+                                    searchLen={this.props.searchLen}
+                                    itemTextStyle={this.props.itemTextStyle}
+                                    defaultTextStyle={this.props.defaultTextStyle}
+                                    onEmpty={this.props.onEmpty}
+                                    itemIconName={this.props.ItemIconName}
+                                    itemIconType={this.props.ItemIconType}
+                                    itemIconStyle={this.props.itemIconStyle}
+
+                                    iconName={this.props.iconName}
+                                    iconType={this.props.iconType}
+                                    iconStyle={this.props.iconStyle}
+                                    loading={this.props.loading}
+                                    {...this.props}
+                                />
+                                :
+                                <MobitPicker
+                                    defaultValue={this.defaultValue()}
+                                    placeholder={this.props.placeholder}
+                                    data={this.props.data}
+                                    onSelect={this.changeValue.bind(this)}
+                                    top={this.props.top}
+                                    left={this.props.left}
+                                    mode={this.props.mode}
+                                    searchLen={this.props.searchLen}
+                                    itemTextStyle={this.props.itemTextStyle}
+                                    defaultTextStyle={this.props.defaultTextStyle}
+                                    itemIconName={this.props.ItemIconName}
+                                    itemIconType={this.props.ItemIconType}
+                                    itemIconStyle={this.props.itemIconStyle}
+                                    iconName={this.props.iconName}
+                                    iconType={this.props.iconType}
+                                    iconStyle={this.props.iconStyle}
+                                    loading={this.props.loading}
+                                    // template={this.props.template}
+                                    {...this.props}
+                                />
+
+                            }
+                            {/*{this.props.loading ?*/}
+
+                                {/*<View style={activePicker2Style.viewSpinner}>*/}
+                                    {/*<Spinner animation="fade" style={activePicker2Style.spinner}*/}
+                                             {/*color='blue' size="small"/>*/}
+                                {/*</View>*/}
+                                {/*: false}*/}
+                        </View>
+
+
+                    </View>
+                </View>
+                {handleError(instance, this.props)}
+            </View>
+        )
+    }
+}
 
 
 /*
@@ -588,7 +766,7 @@ export class ActiveSwitch extends React.Component {
 
                     </View>
 
-                    <TouchableOpacity onPress={() => {
+                    <Touchable onPress={() => {
                         this.changeValue(!val)
                     }}
                     >
@@ -598,7 +776,7 @@ export class ActiveSwitch extends React.Component {
                                 {this.props.label}
                             </Text>
                             : this.props.jsx}
-                    </TouchableOpacity>
+                    </Touchable>
                 </View>
                 {handleError(instance, this.props)}
             </View>
@@ -688,7 +866,7 @@ export class ActiveCheckBox extends React.Component {
 
                     </View>
 
-                    <TouchableOpacity onPress={() => {
+                    <Touchable onPress={() => {
                         this.changeValue(!val)
                     }}
                     >
@@ -698,7 +876,7 @@ export class ActiveCheckBox extends React.Component {
                                 {this.props.label}
                             </Text>
                             : this.props.jsx}
-                    </TouchableOpacity>
+                    </Touchable>
                 </View>
                 {handleError(instance, this.props)}
             </View>
@@ -712,24 +890,37 @@ export class ActiveCheckBox extends React.Component {
  value   => value to set in state
  style    => style in container
  how to set label=>
- label           => string
- labelStyle  => style for label
- style       => style on container
+ label              => string
+ labelStyle         => style for label
+ labelContainer     => label container style
+ style              => style on container
  OR
- jsx             => jsx
+ jsx                => jsx
+ disable            => if true radio is disable
+ showError          => default is true
+ red                => default is true (red border or label)
  */
 
 export class ActiveRadio extends React.Component {
     constructor(props) {
         super(props);
         this.labelStyle = pushToStyle(checkStyle.label, this.props.labelStyle);
+        if (this.props.disable === true) {
+            this.labelStyle = pushToStyle(this.labelStyle, {color: '#9e9e9e'});
+        }
     }
 
     changeValue() {
+        if (this.props.disable === true) {
+            return;
+        }
         const {instance, name, value} = this.props;
         let obj = [];
         obj['params'] = instance.state.params;
         obj['params'][name] = value;
+        if (this.props.extraData !== undefined) {
+            obj = Object.assign({}, obj, this.props.extraData);
+        }
         instance.setState(Object.assign({}, instance.state, obj));
     }
 
@@ -761,17 +952,20 @@ export class ActiveRadio extends React.Component {
 
                     </View>
 
-                    <TouchableOpacity
+                    <Touchable
                         onPress={() => {
                             this.props.onPress ? this.props.onPress() : this.changeValue()
-                        }}>
+                        }}
+                        activeOpacity={this.props.disable ? 1 : 0.5}
+                        style={this.props.labelContainer ? this.props.labelContainer : {}}
+                    >
                         {this.props.label ?
                             <Text
-                                style={[...this.labelStyle,setColor(b_color)]}>
+                                style={[...this.labelStyle, setColor(b_color)]}>
                                 {this.props.label}
                             </Text>
                             : this.props.jsx}
-                    </TouchableOpacity>
+                    </Touchable>
                 </View>
                 {handleError(instance, this.props)}
             </View>
@@ -781,7 +975,7 @@ export class ActiveRadio extends React.Component {
 }
 
 /*
-showError => by default is true if you don't want show error set this to false
+ showError => by default is true if you don't want show error set this to false
 
  */
 const handleError = (instance, props) => {
@@ -808,20 +1002,20 @@ const showError = (instance, props) => {
 const borderColor = (instance, props) => {
     if (hasError(instance, props.name) && showError(instance, props)) {
         if (props.red === false) {
-            return "gray";
+            return "rgba(34,36,38,.15)";
         }
         return "red";
     } else if (hasError(instance, props.name) && props.red === true) {
         return "red";
     }
-    return "gray";
+    return "rgba(34,36,38,.15)";
 };
 
-const setColor=(color)=>{
-    if(color==="gray"){//if gray changed in top then should change here
+const setColor = (color) => {
+    if (color === "rgba(34,36,38,.15)") {//if gray changed in top then should change here
         return {};
     }
-    return {color:color}
+    return {color: color}
 };
 
 const pushToStyle = (prevStyle, newStyle) => {

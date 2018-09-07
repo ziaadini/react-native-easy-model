@@ -20,6 +20,7 @@ export default class ActiveQuery {
     }
     select(params="*"){
         this._selectParams=params;
+        return this;
     }
 
     _generateQuery() {

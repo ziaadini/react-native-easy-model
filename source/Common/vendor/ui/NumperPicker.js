@@ -2,10 +2,10 @@ import React, {Component} from 'react';
 import {
     View,
     Text, StyleSheet,
-    TouchableOpacity
 } from 'react-native';
 import {Icon} from "native-base";
 import {Icons} from "../../config/main";
+import {Touchable} from "./Touchable";
 
 const Styles = StyleSheet.create({
 
@@ -45,11 +45,11 @@ export class NumperPicker extends Component {
         return (
             <View style={Styles.container}>
 
-                <TouchableOpacity style={Styles.allItem}
+                <Touchable style={Styles.allItem}
                                   onPress={this.props.onPlus}
                 >
                     <Icon style={Styles.icon} name={Icons.Plus.name} type={Icons.Plus.type}/>
-                </TouchableOpacity>
+                </Touchable>
 
                 <View style={Styles.split}></View>
                 <View style={[Styles.center, Styles.allItem]}>
@@ -57,11 +57,11 @@ export class NumperPicker extends Component {
                 </View>
                 <View style={Styles.split}></View>
 
-                <TouchableOpacity style={Styles.allItem}
+                <Touchable style={Styles.allItem}
                                   onPress={this.props.onMinus}
                 >
                     <Icon style={Styles.icon} name={Icons.Minus.name} type={Icons.Minus.type}/>
-                </TouchableOpacity>
+                </Touchable>
 
             </View>
         )

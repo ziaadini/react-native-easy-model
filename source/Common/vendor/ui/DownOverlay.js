@@ -4,8 +4,6 @@ import {
     Text,
     StyleSheet,
     Modal,
-    TouchableHighlight,
-    TouchableOpacity,
     TouchableWithoutFeedback, TouchableNativeFeedback
 } from 'react-native';
 import {Icon, Right} from 'native-base';
@@ -22,7 +20,7 @@ const Dimensions = require('Dimensions');
  left               => margin from left and right
  closeOut           => close by click outSide default is true
  */
-export class Overlay extends React.Component {
+export class DownOverlay extends React.Component {
     constructor(props) {
         super(props);
 
@@ -43,20 +41,22 @@ export class Overlay extends React.Component {
             this.closeOut = false;
         }
 
-        EStyleSheet.build({
-            $deviceWidth: Dimensions.get('window').width,
-            $deviceHeight: Dimensions.get('window').height,
-            $height: Dimensions.get('window').height - top * 2,
-            $top: top,
-            $width: Dimensions.get('window').width - left * 2,
-            $left: left,
-        });
+            EStyleSheet.build({
+                $deviceWidth: Dimensions.get('window').width,
+                $deviceHeight: Dimensions.get('window').height,
+                $height: Dimensions.get('window').height-top,
+                $top: top,
+                $width: Dimensions.get('window').width ,
+                $left: 0,
+            });
+
 
 
         this.styles = EStyleSheet.create({
             modalContainer: {
                 height: "$height",
                 top: "$top",
+              //  bottom:200,
                 width: '$width',
                 left: "$left",
                 backgroundColor: '#fff',
@@ -73,7 +73,7 @@ export class Overlay extends React.Component {
         let state = {};
         state[this.props.stateName] = visible;
         state = Object.assign({}, this.props.instance.state, state);
-        this.props.instance.setState(state, () => {
+        this.props.instance.setState(state,()=>{
             this.setState({//initial default after close
                 fadeShadow: true
             });
@@ -96,27 +96,18 @@ export class Overlay extends React.Component {
     _modalContent() {
         return (
             <View
+
                 activeOpacity={1}
                 onPress={() => {
                 }}
-                style={[this.styles.modalContainer, this.props.containerStyle]}>
+                style={[this.styles.modalContainer, this.props.containerStyle,]}>
                 <View style={[this.styles.topContainer, this.props.headerStyle]}>
-                    <TouchableOpacity
-                        style={{
-                            width:44,
-                            height:44,
-                            marginTop:-10,
-                            marginLeft:-10,
-                            paddingLeft:10,
-                            paddingTop:10
-                        }}
-                        onPress={() => {
-                            this.close();
-                            // this.setModalVisible(!instance.state[stateName]);
-                        }}
-                    >
-                    <Icon name="close"/>
-                    </TouchableOpacity>
+                    <Icon name="close"
+                          onPress={() => {
+                              this.close();
+                              // this.setModalVisible(!instance.state[stateName]);
+                          }}
+                    />
                     <Right>
                         {this.props.header}
                     </Right>

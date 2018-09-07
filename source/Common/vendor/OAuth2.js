@@ -4,8 +4,8 @@ import {getTime} from "../constant/func";
 import {Model} from "./Model";
 
 export const oAuth2Config = {
-    client_id: 'app_ddD@dffdAH!rbvGgn',
-    client_secret: 'dsdF_DVDV1sd.ssAq@?q!Trvfhg',
+    client_id: 'mobit_plus_app_ddD@dffdA',
+    client_secret: 'ASx@sdsdF_DVDV1sd.s',
     // grant_type: 'password',
     // grant_type: 'refresh_token',
 };
@@ -20,6 +20,13 @@ export class OAuth2 {
         return response;
     }
 
+    static async hasToken(){
+        let token=await AsyncStorage.getItem(OAuth2.TOKEN_KEY);
+        if(token){
+            return true;
+        }
+        return false;
+    }
     static  fetch(url,method="GET",params={}) {
         return AsyncStorage.getItem(OAuth2.TOKEN_KEY).then(async (value) => {
             if (value) {//if we have token

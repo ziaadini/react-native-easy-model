@@ -5,7 +5,6 @@ import {
     StyleSheet,
     Modal,
     TouchableHighlight,
-    TouchableOpacity,
     TouchableWithoutFeedback, TouchableNativeFeedback
 } from 'react-native';
 import {Icon, Right} from 'native-base';
@@ -101,22 +100,12 @@ export class Overlay extends React.Component {
                 }}
                 style={[this.styles.modalContainer, this.props.containerStyle]}>
                 <View style={[this.styles.topContainer, this.props.headerStyle]}>
-                    <TouchableOpacity
-                        style={{
-                            width:44,
-                            height:44,
-                            marginTop:-10,
-                            marginLeft:-10,
-                            paddingLeft:10,
-                            paddingTop:10
-                        }}
-                        onPress={() => {
-                            this.close();
-                            // this.setModalVisible(!instance.state[stateName]);
-                        }}
-                    >
-                    <Icon name="close"/>
-                    </TouchableOpacity>
+                    <Icon name="close"
+                          onPress={() => {
+                              this.close();
+                              // this.setModalVisible(!instance.state[stateName]);
+                          }}
+                    />
                     <Right>
                         {this.props.header}
                     </Right>

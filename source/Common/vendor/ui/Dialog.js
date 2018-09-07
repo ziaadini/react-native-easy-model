@@ -28,6 +28,14 @@ const style = StyleSheet.create({
     }
 });
 
+/*
+    onOk           => when user press ok
+    okLabel        =>label of ok button
+    cancelLabel    =>label of cancel button
+    message        => your message
+    for open dialog you should call show function from ref
+
+ */
 export class DeleteDialog extends Component {
     constructor(props) {
         super(props);
@@ -54,7 +62,7 @@ export class DeleteDialog extends Component {
             >
                 <View style={style.container}>
                     <View style={style.textContainer}>
-                        <Text style={commonCss.text}>
+                        <Text style={[commonCss.text,{textAlign:'right'}]}>
                             {this.props.message ? this.props.message : "آیا از حذف این مورد اطمینان دارید؟"}
                         </Text>
                     </View>
@@ -69,7 +77,7 @@ export class DeleteDialog extends Component {
                         }}
                         >
                             <Text style={[commonCss.text,commonCss.colorWhite]}>
-                                حذف
+                                {this.props.okLabel?this.props.okLabel:'حذف'}
                             </Text>
                         </Button>
                         <Button style={[commonCss.btnGrayLight,commonCss.btn,style.btnWidth]}
@@ -78,7 +86,7 @@ export class DeleteDialog extends Component {
                         }}
                         >
                             <Text style={commonCss.text}>
-                                انصراف
+                                {this.props.cancelLabel?this.props.cancelLabel:'انصراف'}
                             </Text>
                         </Button>
                     </View>
@@ -94,8 +102,13 @@ const LoadingStyle = StyleSheet.create({
         flex: 1,
         justifyContent:'center',
         alignItems:'center',
+        padding:10,
+        paddingTop:30,
     },
 
+    image:{
+        width:150,height:50
+    }
 });
 
 export class LoadingDialog extends Component {
@@ -105,10 +118,10 @@ export class LoadingDialog extends Component {
     }
 
     show() {
-        // this.dialogComponent.show();
+        this.dialogComponent.show();
     }
     close(){
-        // this.dialogComponent.dismiss();
+        this.dialogComponent.dismiss();
     }
 
 
@@ -120,11 +133,15 @@ export class LoadingDialog extends Component {
                 }}
                 dismissOnTouchOutside={false}
                 animationDuration={12}
-                width={"60%"}
-                height={120}
+                width={"80%"}
+                height={150}
             >
                 <View style={LoadingStyle.container}>
-                        <Spinner color="blue"/>
+                    <Image source={require('../../../assets/Images/mobit.png')}
+                        style={LoadingStyle.image}
+                           resizeMode='cover'
+                    />
+                    <Spinner color="blue"/>
                 </View>
             </DialogComponent>
         )

@@ -5,6 +5,7 @@ export const db = {
     size: 200000,
 };
 export const baseUrl = 'https://www.mobit.ir/api/web/';
+// export const baseUrl = 'http://192.168.9.166:80/api/web/';
 export const baseUrl2 = 'https://www.mobit.ir/products';
 
 export const Icons = {
@@ -29,16 +30,16 @@ export const Icons = {
         name: 'md-checkmark'
     },
     Sort: {
-        type: "Ionicons",
-        name: 'funnel'
+        type: "FontAwesome",
+        name: 'sort'
     },
     Filter: {
         type: "FontAwesome",
         name: 'filter'
     },
     Category: {
-        type: "Ionicons",
-        name: 'paper'
+        type: "FontAwesome",
+        name: 'list-ul'
     },
     Eye: {
         type: "Ionicons",
@@ -51,6 +52,10 @@ export const Icons = {
     Share_alt: {
         type: 'Ionicons',
         name: 'md-share-alt'
+    },
+    Share: {
+        type: 'Ionicons',
+        name: 'share'
     },
     Heart: {
         type: 'Ionicons',
@@ -88,6 +93,10 @@ export const Icons = {
         type: "Ionicons",
         name: "ios-arrow-down"
     },
+    arrowUp: {
+        type: "Ionicons",
+        name: "ios-arrow-up"
+    },
     Back: {
         type: 'Ionicons',
         name: 'ios-arrow-back',
@@ -99,6 +108,10 @@ export const Icons = {
     Apps: {
         type: 'Ionicons',
         name: 'apps'
+    },
+    Browser: {
+        type: 'FontAwesome',
+        name: 'edge',
     },
     Chart: {
         type: 'Ionicons',
@@ -148,6 +161,10 @@ export const Icons = {
         type: 'FontAwesome',
         name: 'barcode',
     },
+    User: {
+        type: 'FontAwesome',
+        name: 'user',
+    },
     Search: {
         type: 'Ionicons',
         name: 'md-search'
@@ -168,52 +185,82 @@ export const Icons = {
         type: 'Ionicons',
         name: 'add'
     },
-    More:{
-        type:'Ionicons',
-        name:'more'
+    More: {
+        type: 'Ionicons',
+        name: 'more'
     },
-    Call:{
-        type:'Ionicons',
-        name:'call'
+    Call: {
+        type: 'Ionicons',
+        name: 'call'
     },
-    Phone:{
-        type:'Ionicons',
-        name:'phone-portrait'
+    Phone: {
+        type: 'Ionicons',
+        name: 'phone-portrait'
     },
-    Pin:{
-        type:'Ionicons',
-        name:'pin'
+    Pin: {
+        type: 'Ionicons',
+        name: 'pin'
     },
-    Code:{
-        type:'Ionicons',
-        name:'code-working'
+    Code: {
+        type: 'Ionicons',
+        name: 'code-working'
     },
-    Map:{
-        type:'FontAwesome',
-        name:'map-marker'
-    },
-
-    Plus:{
-        type:'Ionicons',
-        name:'add'
-    },
-    Minus:{
-        type:'Ionicons',
-        name:'remove'
-    },
-    Delete:{
-        type:'FontAwesome',
-        name:'trash'
-
+    Map: {
+        type: 'FontAwesome',
+        name: 'map-marker'
     },
 
-    Settings:{
-        type:'Ionicons',
-        name:'settings'
+    Plus: {
+        type: 'Ionicons',
+        name: 'add'
     },
-    Gift:{
-        type:"FontAwesome",
-        name:"gift"
-    }
+    Minus: {
+        type: 'Ionicons',
+        name: 'remove'
+    },
+    Delete: {
+        type: 'FontAwesome',
+        name: 'trash'
+
+    },
+    Sync: {
+        type: 'Ionicons',
+        name: 'md-refresh'
+
+    },
+    Sync2:{
+        type: "Ionicons",
+        name:'md-sync',
+
+    },
+
+    Settings: {
+        type: 'Ionicons',
+        name: 'settings'
+    },
+    Gift: {
+        type: "FontAwesome",
+        name: "gift"
+    },
+    Menu: {
+        type: 'Ionicons',
+        name: 'menu'
+    },
+    Envelope: {
+        type: "FontAwesome",
+        name: "envelope",
+    },
+    Header: {
+        type: "FontAwesome",
+        name: "header",
+    },
+    List: {
+        type: "FontAwesome",
+        name: "list",
+    },
+    Pencil: {
+        type: "FontAwesome",
+        name: "pencil",
+    },
 
 };

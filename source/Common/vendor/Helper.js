@@ -113,17 +113,26 @@ export function array_sum(arrayOfObject, prop) {
     return total
 }
 
+export function preparePicker(data, from, to) {
+    let output = [];
+    for (let key in data) {
+        output.push({label: data[key][to], value: data[key][from]});
+    }
+    return output;
+}
+
 export function mapObject(object, callback) {
     return Object.keys(object).map(function (key) {
         return callback(object[key], key);
     });
 }
 
-// export function goBack() {
-//      Actions.pop({refresh: {refresh:Math.random()}});
-// }
+export function goBack() {
+    Actions.pop({refresh: {refresh: Math.random()}});
+}
+
 export function empty(obj) {
-     return Model.empty(obj);
+    return Model.empty(obj);
 }
 
 

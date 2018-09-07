@@ -160,6 +160,31 @@ export class Model {
         }
         this.getUrl([url], Object.assign({}, this.params, params), true, false);
     }
+    setParams(params){
+        if (!params) {
+            throw new TypeError("params must be set");
+        }
+        let url = this.url;
+        if (!this.params) {
+            this.params = {};
+        } else {
+            url = this.url.split("?")[0];
+        }
+        this.getUrl([url], params, true, false);
+    }
+    removePrameter(key) {
+        if (!key) {
+            throw new TypeError("params must be set");
+        }
+        let url = this.url;
+        if (!this.params) {
+            this.params = {};
+        } else {
+            url = this.url.split("?")[0];
+        }
+        delete this.params[key];
+        this.getUrl([url],this.params, true, false);
+    }
 
     async fetchAsync(url = this.url) {
         try {
@@ -180,7 +205,7 @@ export class Model {
 
     fetch(url = this.url) {
         // console.log('url in fetch');
-        // console.log(url);
+        //  console.log(url);
         return fetch(url,
             {
                 method: "GET",
@@ -455,8 +480,6 @@ export class Model {
         params.push(this[primary]);
 
         let sql = `UPDATE ${this.constructor.tableName()} SET ${update} WHERE ${where}`;
-        console.log(sql);
-        console.log(params);
         return {
             sql: sql,
             params: params
@@ -487,7 +510,6 @@ export class Model {
                 this.handleRules(rules[i]);
             }
         }
-        console.log(this.getError());
         if (instance !== false) {
             instance.setState({
                 error: this.getError(),
@@ -526,7 +548,7 @@ export class Model {
 
     handleRules(ruleItem) {//
         if (Array.isArray(ruleItem.field)) {
-            for (var i = 0; i < ruleItem.field.length; i++) {
+            for (var i = 0; i < ruleItem.field.length; i++) {//loop on field
                 this.setRule(ruleItem.field[i], this[ruleItem.field[i]], ruleItem)
             }
         } else {
@@ -603,6 +625,12 @@ export class Model {
                         break;
                     }
                     this.__string(att, value, ruleItem.maxLength, ruleItem.minLength);
+                    break;
+                    case "compare":
+                    if (skip && !this._hasValue(value)) {
+                        break;
+                    }
+                    this.__compare(att, value, ruleItem.compareAttribute);
                     break;
             }
         }
@@ -708,6 +736,22 @@ export class Model {
             }
         }
     }
+
+    __compare(att,value,compareAtt){
+        if(this[att]!==this[compareAtt]){
+            let compare=this.attributeLabels()[compareAtt];
+            let attribute=this.attributeLabels()[att];
+            if(compare===undefined){
+                compare=compareAtt;
+            }
+            if(attribute===undefined){
+                attribute=att;
+            }
+            this.addError(att,this.__translate(att,"_compare_",compare));
+            this.addError(compareAtt,this.__translate(compareAtt,"_compare_",attribute));
+        }
+    }
+
 
 
     getError(field = null) {
