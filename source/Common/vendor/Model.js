@@ -160,7 +160,8 @@ export class Model {
         }
         this.getUrl([url], Object.assign({}, this.params, params), true, false);
     }
-    setParams(params){
+
+    setParams(params) {
         if (!params) {
             throw new TypeError("params must be set");
         }
@@ -172,6 +173,7 @@ export class Model {
         }
         this.getUrl([url], params, true, false);
     }
+
     removePrameter(key) {
         if (!key) {
             throw new TypeError("params must be set");
@@ -183,7 +185,7 @@ export class Model {
             url = this.url.split("?")[0];
         }
         delete this.params[key];
-        this.getUrl([url],this.params, true, false);
+        this.getUrl([url], this.params, true, false);
     }
 
     async fetchAsync(url = this.url) {
@@ -500,6 +502,18 @@ export class Model {
         return new ActiveQuery(this, instance);
     }
 
+     hasMany(TargetInstance, link, getData = false) {
+        let query = TargetInstance.constructor.find(Object.assign({}, TargetInstance, {}));
+
+        query._link = link;
+        query._multiple = true;
+        query._baseInstance=this;
+        if (getData) {
+            return query.all();
+        }
+        return query;
+    }
+
 
     validate(instance = false) {
         //instance for set error state
@@ -626,7 +640,7 @@ export class Model {
                     }
                     this.__string(att, value, ruleItem.maxLength, ruleItem.minLength);
                     break;
-                    case "compare":
+                case "compare":
                     if (skip && !this._hasValue(value)) {
                         break;
                     }
@@ -737,21 +751,20 @@ export class Model {
         }
     }
 
-    __compare(att,value,compareAtt){
-        if(this[att]!==this[compareAtt]){
-            let compare=this.attributeLabels()[compareAtt];
-            let attribute=this.attributeLabels()[att];
-            if(compare===undefined){
-                compare=compareAtt;
+    __compare(att, value, compareAtt) {
+        if (this[att] !== this[compareAtt]) {
+            let compare = this.attributeLabels()[compareAtt];
+            let attribute = this.attributeLabels()[att];
+            if (compare === undefined) {
+                compare = compareAtt;
             }
-            if(attribute===undefined){
-                attribute=att;
+            if (attribute === undefined) {
+                attribute = att;
             }
-            this.addError(att,this.__translate(att,"_compare_",compare));
-            this.addError(compareAtt,this.__translate(compareAtt,"_compare_",attribute));
+            this.addError(att, this.__translate(att, "_compare_", compare));
+            this.addError(compareAtt, this.__translate(compareAtt, "_compare_", attribute));
         }
     }
-
 
 
     getError(field = null) {

@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import UserModel from "./source/model/UserModel";
 import {SubmitButton, TextBordered} from "./source/Common/vendor/ui/ActiveForm";
+import ShipModel from "./source/model/ShipModel";
 
 export default class App extends Component<Props> {
 
@@ -21,6 +22,19 @@ export default class App extends Component<Props> {
             error: {},
         };
         this.model = new UserModel();
+    }
+    async componentWillMount(){
+        // let ship=new ShipModel();
+        // ship.zipCode="1234";
+        // ship.address="kerman iran";
+        // ship.user_id=1;
+        // await ship.save(this,false);
+        let data=await UserModel.find(new UserModel())
+            .andWhere({id:1})
+            .one();
+        // let ships=await data.getShips(true);
+        console.log('data is : ',data);
+        // console.log('ships is : ',ships);
     }
 
     async _submit() {

@@ -1,6 +1,7 @@
 //user model example
 import {Model} from "../Common/vendor/Model"
 import Translate from "../Common/vendor/Translate";
+import ShipModel from "./ShipModel";
 
 export default class UserModel extends Model {
     static VERSION = "v1";
@@ -42,6 +43,9 @@ export default class UserModel extends Model {
             first_name:Translate.t(language,'first_name'),
             last_name:Translate.t(language,'last_name'),
         }
+    }
+    getShips(getData=false){
+        return this.hasMany(new ShipModel(),{user_id:'id'},getData);
     }
 
 }

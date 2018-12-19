@@ -1,3 +1,5 @@
+import {imploade} from "./Helper";
+
 export default class ActiveQuery {
     _selectParams = "*";
     _where = "";
@@ -6,6 +8,10 @@ export default class ActiveQuery {
     _offset = null;
     _order = null;
     _where_index = 0;//number of where called -> used for add to :arg
+    _baseInstance;//when use relation should set base class to add _link to where condition by value of base instance
+    _link = {};
+    _multiple = false;
+    _isJoin = false;//if  it's not join then add _link to where condition else add _link to on condition
 
     constructor(instance = "", modelInstance) {
         this._tableName = instance.tableName();
@@ -18,12 +24,30 @@ export default class ActiveQuery {
             this.db = this.instance.db;
         }
     }
-    select(params="*"){
-        this._selectParams=params;
+
+    select(params = "*") {
+        if (typeof params === "object") {
+            this._selectParams = imploade(",", params);
+        } else {
+            this._selectParams = params;
+        }
         return this;
     }
 
+    _handleLink() {
+        if (this._isJoin) {
+            //toDo add link to ON condition for join relation
+        } else {
+            for (let index in this._link) {//toDO handle tableName in query اسم جدول رو چطور ابتدای نام ستون بیاوریم
+                let conditionObject={};
+                conditionObject[index]=this._baseInstance[this._link[index]];//add value of base instance to condition
+                this.andWhere(conditionObject);
+            }
+        }
+    }
+
     _generateQuery() {
+        this._handleLink();//check _link and add it to WHERE or ON condition block
         let sql = `SELECT ${this._selectParams} FROM ${this._tableName}`;
         if (this._where !== "") {
             sql += " WHERE " + this._where;
@@ -79,8 +103,19 @@ export default class ActiveQuery {
     _imploadeCondition(separator, arg1) {
         let data = "";
         for (let key in arg1) {
-            data += separator + "(" + key + "=:__" + key + this._where_index + "__)";
-            this._whereParams.push(arg1[key]);
+            if (typeof arg1[key] === "object") {//if is object use IN condition instead of =
+                let count = arg1[key].length;
+                let $in = "?,";
+                $in = $in.repeat(count - 1) + "?";
+                data += separator + "(" + key + " IN (" + $in + "))";
+                for (let i in arg1[key]) {
+                    this._whereParams.push(arg1[key][i]);
+                }
+            } else {
+                data += separator + "(" + key + "=:__" + key + this._where_index + "__)";
+                this._whereParams.push(arg1[key]);
+            }
+
         }
         return data.substr(separator.length);
     }
@@ -115,9 +150,15 @@ export default class ActiveQuery {
     }
 
 
+    joinWith() {
+        this._isJoin = true;
+    }
+
     one() {
         this._limit = 1;
         let sql = this._generateQuery();
+        console.log('sql is : ', sql);
+        console.log('params is : ', this._whereParams);
         let root = this;
         let model = {};
         if (this._model_) {
@@ -145,7 +186,8 @@ export default class ActiveQuery {
 
     all() {
         let sql = this._generateQuery();
-        console.log(sql);
+        console.log('sql is : ', sql);
+        console.log('params is : ', this._whereParams);
         let root = this;
         let model = {};
         if (this._model_) {

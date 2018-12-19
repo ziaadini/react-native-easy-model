@@ -108,7 +108,8 @@ const styles = StyleSheet.create({
  showError   =>by default is true
  red         => if true -> even showError is false border is red.
 
- numberFormat =>if it's true show number_format in value
+ numberFormat  =>if it's true show number_format in value
+ validationAtt => if set use this attribute instead of name
  */
 
 export class TextBordered extends React.Component {
@@ -979,7 +980,7 @@ export class ActiveRadio extends React.Component {
 
  */
 const handleError = (instance, props) => {
-    let name = props.name;
+    let name = props.validationAtt !== undefined ? props.validationAtt : props.name;
     return (
         <View>
             {hasError(instance, name) && showError(instance, props) ?
