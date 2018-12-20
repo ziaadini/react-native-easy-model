@@ -1,35 +1,29 @@
 //user model example
 import {Model} from "../Common/vendor/Model"
 import Translate from "../Common/vendor/Translate";
-import NumberModel from "./NumberModel";
 
-export default class ShipModel extends Model {
+export default class NumberModel extends Model {
     static VERSION = "v1";
     constructor(createTable = true) {
         super();
         if (createTable) {
             this.createTable();
         }
-        this.getUrl(['ship','data']);
+        this.getUrl(['number','data']);
     }
 
     static tableName() {
-        return "Ship";
+        return "phoneNumber";
     }
 
     static table() {
         let table;
         table = {
             id: "INTEGER PRIMARY KEY NOT NULL",
-            zipCode: "varchar(50)",
-            user_id:'INTEGER',
-            address: "text",
+            mobile: "varchar(10)",
+            ship_id:'INTEGER',
         };
         return table;
-    }
-
-    numbers(){
-        return this.hasMany(new NumberModel(),{ship_id:'id'})
     }
 
     // rules() {

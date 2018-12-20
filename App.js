@@ -25,14 +25,16 @@ export default class App extends Component<Props> {
     }
     async componentWillMount(){
         // let ship=new ShipModel();
-        // ship.zipCode="1234";
-        // ship.address="kerman iran";
+        // ship.zipCode="656545";
+        // ship.address="سمنان ایران";
         // ship.user_id=1;
         // await ship.save(this,false);
         let data=await UserModel.find(new UserModel())
-            .andWhere({id:1})
-            .one();
-        // let ships=await data.getShips(true);
+            .joinWith('ships.numbers')
+            .all();
+
+        // let ships=await data.getShips().all();
+        // let ships=await data['getShips']().all();
         console.log('data is : ',data);
         // console.log('ships is : ',ships);
     }

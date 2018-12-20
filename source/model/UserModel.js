@@ -8,7 +8,7 @@ export default class UserModel extends Model {
     static _FULL_NAME="fullName";//scenario for require full name
     constructor(createTable = true) {
         super();
-        this.getUrl(['user','data'],);
+        this.getUrl(['user','data']);
         if (createTable) {
             this.createTable();
         }
@@ -44,7 +44,7 @@ export default class UserModel extends Model {
             last_name:Translate.t(language,'last_name'),
         }
     }
-    getShips(getData=false){
+    ships(getData=false){
         return this.hasMany(new ShipModel(),{user_id:'id'},getData);
     }
 

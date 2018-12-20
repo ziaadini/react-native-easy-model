@@ -502,14 +502,27 @@ export class Model {
         return new ActiveQuery(this, instance);
     }
 
-     hasMany(TargetInstance, link, getData = false) {
-        let query = TargetInstance.constructor.find(Object.assign({}, TargetInstance, {}));
+    _createRelationQuery(TargetInstance, link) {
+        let cloneTarget = Object.assign(Object.create(Object.getPrototypeOf(TargetInstance)), TargetInstance);
+        let query = TargetInstance.constructor.find(cloneTarget);
 
         query._link = link;
-        query._multiple = true;
-        query._baseInstance=this;
+        query._baseInstance = this;
+        return query;
+    }
+
+    hasMany(TargetInstance, link, getData = false) {
+        let query = this._createRelationQuery(TargetInstance, link);
         if (getData) {
             return query.all();
+        }
+        return query;
+    }
+
+    hasOne(TargetInstance, link, getData = false) {
+        let query = this._createRelationQuery(TargetInstance, link);
+        if (getData) {
+            return query.one();
         }
         return query;
     }

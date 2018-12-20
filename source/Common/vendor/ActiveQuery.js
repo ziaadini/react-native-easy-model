@@ -3,6 +3,7 @@ import {imploade} from "./Helper";
 export default class ActiveQuery {
     _selectParams = "*";
     _where = "";
+    _on = "";
     _whereParams = [];
     _limit = null;
     _offset = null;
@@ -10,9 +11,9 @@ export default class ActiveQuery {
     _where_index = 0;//number of where called -> used for add to :arg
     _baseInstance;//when use relation should set base class to add _link to where condition by value of base instance
     _link = {};
-    _multiple = false;
+    _add_tablename_to_link = true;
     _isJoin = false;//if  it's not join then add _link to where condition else add _link to on condition
-
+    _joinBlock = "";//when joinWidth method called this method build _joinBlock variable
     constructor(instance = "", modelInstance) {
         this._tableName = instance.tableName();
         this.instance = instance;
@@ -36,11 +37,27 @@ export default class ActiveQuery {
 
     _handleLink() {
         if (this._isJoin) {
-            //toDo add link to ON condition for join relation
+            //add link to ON condition for join relation
+
+            for (let index in this._link) {
+                let condition = {};
+                if (this._add_tablename_to_link) {
+                    condition =  this._tableName + "." + index + "=" +this._baseInstance.constructor.tableName() + '.' + this._link[index];//add value of base instance to condition
+                } else {
+                    condition =  index + "=" + this._link[index];//add value of base instance to condition
+                }
+                this.andOnCondition(condition);
+            }
+
+
         } else {
-            for (let index in this._link) {//toDO handle tableName in query اسم جدول رو چطور ابتدای نام ستون بیاوریم
-                let conditionObject={};
-                conditionObject[index]=this._baseInstance[this._link[index]];//add value of base instance to condition
+            for (let index in this._link) {
+                let conditionObject = {};
+                if (this._add_tablename_to_link) {
+                    conditionObject[this._tableName + "." + index] = this._baseInstance[this._link[index]];//add value of base instance to condition
+                } else {
+                    conditionObject[index] = this._baseInstance[this._link[index]];//add value of base instance to condition
+                }
                 this.andWhere(conditionObject);
             }
         }
@@ -49,6 +66,9 @@ export default class ActiveQuery {
     _generateQuery() {
         this._handleLink();//check _link and add it to WHERE or ON condition block
         let sql = `SELECT ${this._selectParams} FROM ${this._tableName}`;
+        if (this._joinBlock) {
+            sql += this._joinBlock;
+        }
         if (this._where !== "") {
             sql += " WHERE " + this._where;
         }
@@ -99,6 +119,16 @@ export default class ActiveQuery {
         return this;
     }
 
+    andOnCondition(arg1, arg2 = null, data1 = null, data2 = null) {
+        if (this._isJoin) {
+            this._where_index++;
+            this._addConditionBlock(arg1, arg2, data1, data2, "AND", false);
+        } else {
+            //if it's not join query add condition to where statement
+            this.andWhere(arg1, arg2 = null, data1 = null, data2 = null)
+        }
+    }
+
 
     _imploadeCondition(separator, arg1) {
         let data = "";
@@ -112,7 +142,7 @@ export default class ActiveQuery {
                     this._whereParams.push(arg1[key][i]);
                 }
             } else {
-                data += separator + "(" + key + "=:__" + key + this._where_index + "__)";
+                data += separator + "(" + key + "=:__" + key.replace(".", "_") + this._where_index + "__)";
                 this._whereParams.push(arg1[key]);
             }
 
@@ -124,19 +154,33 @@ export default class ActiveQuery {
         return this._where === "";
     }
 
-    _addConditionBlock(arg1, arg2 = null, data1 = null, data2 = null, type = "AND") {
+    _addConditionBlock(arg1, arg2 = null, data1 = null, data2 = null, type = "AND", is_where = true) {
         if (data1 === null && data2 === null) {//normal condition
             if (typeof arg1 === "object") {
                 if (this._isFirstCondition()) {
-                    this._where += `(${this._imploadeCondition(" AND ", arg1)})`
+                    if (is_where) {
+                        this._where += `(${this._imploadeCondition(" AND ", arg1)})`
+                    } else {
+                        this._on += `(${this._imploadeCondition(" AND ", arg1)})`
+                    }
                 } else {
-                    this._where += ` ${type} (${this._imploadeCondition(" AND ", arg1)})`
+                    if (is_where) {
+                        this._where += ` ${type} (${this._imploadeCondition(" AND ", arg1)})`
+                    } else {
+                        this._on += ` ${type} (${this._imploadeCondition(" AND ", arg1)})`
+                    }
                 }
             } else {//if where is string
-                if (this._where !== "") {
+                if (is_where && this._where !== "") {
                     this._where += ` ${type} `
+                } else if (!is_where && this._where !== "") {
+                    this._on += ` ${type} `
                 }
-                this._where += "(" + arg1 + ")";
+                if (is_where) {
+                    this._where += "(" + arg1 + ")";
+                } else {
+                    this._on += "(" + arg1 + ")";
+                }
                 if (arg2 !== null && Array.isArray(arg2)) {
                     this._whereParams = this._whereParams.concat(arg2);
                 }
@@ -150,8 +194,23 @@ export default class ActiveQuery {
     }
 
 
-    joinWith() {
-        this._isJoin = true;
+    joinWith(relationName, type = "LEFT JOIN") {
+        let model = this._model_;
+        let relationNames=relationName.split(".");
+        for(let key in relationNames){
+            let rel=relationNames[key];
+            let obj=model[rel](false);//call relation to get active query object
+            console.log('model is : ',model);
+            console.log('rel is : ',rel);
+            obj._isJoin = true;
+            obj._handleLink(obj._tableName);
+            // console.log('obj is : ', obj);
+            this._joinBlock += ` ${type} ` + obj._tableName + " " + "ON" + " " + obj._on;
+
+            model=obj._model_;
+
+        }
+        return this;
     }
 
     one() {
