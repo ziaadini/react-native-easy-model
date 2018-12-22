@@ -45,7 +45,9 @@ export default class UserModel extends Model {
         }
     }
     ships(getData=false){
-        return this.hasMany(new ShipModel(),{user_id:'id'},getData);
+        let on={};
+        on[this.constructor.tableName()+"."+"id"]=2;
+        return this.hasMany(new ShipModel(),{user_id:'id'},getData).andOnCondition(on);
     }
 
 }

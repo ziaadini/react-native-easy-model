@@ -5,6 +5,7 @@ export default class ActiveQuery {
     _where = "";
     _on = "";
     _whereParams = [];
+    _onParams = [];
     _limit = null;
     _offset = null;
     _order = null;
@@ -12,7 +13,7 @@ export default class ActiveQuery {
     _baseInstance;//when use relation should set base class to add _link to where condition by value of base instance
     _link = {};
     _add_tablename_to_link = true;
-    _isJoin = false;//if  it's not join then add _link to where condition else add _link to on condition
+    static _isJoin = false;//if  it's not join then add _link to where condition else add _link to on condition
     _joinBlock = "";//when joinWidth method called this method build _joinBlock variable
     constructor(instance = "", modelInstance) {
         this._tableName = instance.tableName();
@@ -36,15 +37,15 @@ export default class ActiveQuery {
     }
 
     _handleLink() {
-        if (this._isJoin) {
+        if (this.constructor._isJoin) {
             //add link to ON condition for join relation
 
             for (let index in this._link) {
                 let condition = {};
                 if (this._add_tablename_to_link) {
-                    condition =  this._tableName + "." + index + "=" +this._baseInstance.constructor.tableName() + '.' + this._link[index];//add value of base instance to condition
+                    condition = this._tableName + "." + index + "=" + this._baseInstance.constructor.tableName() + '.' + this._link[index];//add value of base instance to condition
                 } else {
-                    condition =  index + "=" + this._link[index];//add value of base instance to condition
+                    condition = index + "=" + this._link[index];//add value of base instance to condition
                 }
                 this.andOnCondition(condition);
             }
@@ -120,17 +121,18 @@ export default class ActiveQuery {
     }
 
     andOnCondition(arg1, arg2 = null, data1 = null, data2 = null) {
-        if (this._isJoin) {
+        if (this.constructor._isJoin) {
             this._where_index++;
             this._addConditionBlock(arg1, arg2, data1, data2, "AND", false);
         } else {
             //if it's not join query add condition to where statement
             this.andWhere(arg1, arg2 = null, data1 = null, data2 = null)
         }
+        return this;
     }
 
 
-    _imploadeCondition(separator, arg1) {
+    _imploadeCondition(separator, arg1, is_where = true) {
         let data = "";
         for (let key in arg1) {
             if (typeof arg1[key] === "object") {//if is object use IN condition instead of =
@@ -139,11 +141,19 @@ export default class ActiveQuery {
                 $in = $in.repeat(count - 1) + "?";
                 data += separator + "(" + key + " IN (" + $in + "))";
                 for (let i in arg1[key]) {
-                    this._whereParams.push(arg1[key][i]);
+                    if (is_where) {
+                        this._whereParams.push(arg1[key][i]);
+                    } else {
+                        this._onParams.push(arg1[key][i]);
+                    }
                 }
             } else {
                 data += separator + "(" + key + "=:__" + key.replace(".", "_") + this._where_index + "__)";
-                this._whereParams.push(arg1[key]);
+                if (is_where) {
+                    this._whereParams.push(arg1[key]);
+                } else {
+                    this._onParams.push(arg1[key]);
+                }
             }
 
         }
@@ -159,21 +169,21 @@ export default class ActiveQuery {
             if (typeof arg1 === "object") {
                 if (this._isFirstCondition()) {
                     if (is_where) {
-                        this._where += `(${this._imploadeCondition(" AND ", arg1)})`
+                        this._where += `(${this._imploadeCondition(" AND ", arg1, is_where)})`
                     } else {
-                        this._on += `(${this._imploadeCondition(" AND ", arg1)})`
+                        this._on += `(${this._imploadeCondition(" AND ", arg1, is_where)})`
                     }
                 } else {
                     if (is_where) {
-                        this._where += ` ${type} (${this._imploadeCondition(" AND ", arg1)})`
+                        this._where += ` ${type} (${this._imploadeCondition(" AND ", arg1, is_where)})`
                     } else {
-                        this._on += ` ${type} (${this._imploadeCondition(" AND ", arg1)})`
+                        this._on += ` ${type} (${this._imploadeCondition(" AND ", arg1, is_where)})`
                     }
                 }
             } else {//if where is string
                 if (is_where && this._where !== "") {
                     this._where += ` ${type} `
-                } else if (!is_where && this._where !== "") {
+                } else if (!is_where && this._on !== "") {
                     this._on += ` ${type} `
                 }
                 if (is_where) {
@@ -182,7 +192,10 @@ export default class ActiveQuery {
                     this._on += "(" + arg1 + ")";
                 }
                 if (arg2 !== null && Array.isArray(arg2)) {
-                    this._whereParams = this._whereParams.concat(arg2);
+                    if (is_where) {
+                        this._whereParams = this._whereParams.concat(arg2);
+                    }
+                    this._onParams = this._onParams.concat(arg2);
                 }
             }
         } else {
@@ -196,28 +209,37 @@ export default class ActiveQuery {
 
     joinWith(relationName, type = "LEFT JOIN") {
         let model = this._model_;
-        let relationNames=relationName.split(".");
-        for(let key in relationNames){
-            let rel=relationNames[key];
-            let obj=model[rel](false);//call relation to get active query object
-            console.log('model is : ',model);
-            console.log('rel is : ',rel);
-            obj._isJoin = true;
+        let relationNames = relationName.split(".");
+        this.constructor._isJoin = true;
+
+        for (let key in relationNames) {
+            let rel = relationNames[key];
+            let obj = model[rel](false);//call relation to get active query object
+            // console.log('model is : ', model);
+            // console.log('rel is : ', rel);
             obj._handleLink(obj._tableName);
             // console.log('obj is : ', obj);
             this._joinBlock += ` ${type} ` + obj._tableName + " " + "ON" + " " + obj._on;
-
-            model=obj._model_;
-
+            if (obj._where) {
+                this._where += this._where !== "" ? ` AND(${obj._where})` : obj._where;
+            }
+            this._onParams=this._onParams.concat(obj._onParams);
+            this._whereParams=this._whereParams.concat(obj._whereParams);
+            model = obj._model_;
         }
+        this.constructor._isJoin = false;
         return this;
     }
+
+    params = () => {
+        return this._onParams.concat(this._whereParams);
+    };
 
     one() {
         this._limit = 1;
         let sql = this._generateQuery();
         console.log('sql is : ', sql);
-        console.log('params is : ', this._whereParams);
+        console.log('params is : ', this.params());
         let root = this;
         let model = {};
         if (this._model_) {
@@ -226,7 +248,7 @@ export default class ActiveQuery {
         }
         return new Promise(function (resolve, reject) {
             root.db.transaction(function (txn) {
-                txn.executeSql(sql, root._whereParams, function (tx, res) {
+                txn.executeSql(sql, root.params(), function (tx, res) {
                     if (root._model_) {
                         model.loadAll(res.rows.item(0));
                     } else {
@@ -246,7 +268,7 @@ export default class ActiveQuery {
     all() {
         let sql = this._generateQuery();
         console.log('sql is : ', sql);
-        console.log('params is : ', this._whereParams);
+        console.log('params is : ', this.params());
         let root = this;
         let model = {};
         if (this._model_) {
@@ -256,7 +278,7 @@ export default class ActiveQuery {
         let data = [];
         return new Promise(function (resolve, reject) {
             root.db.transaction(function (txn) {
-                txn.executeSql(sql, root._whereParams, function (tx, res) {
+                txn.executeSql(sql, root.params(), function (tx, res) {
                     for (let i = 0; i < res.rows.length; ++i) {
                         if (root._model_) {
                             model = Object.assign(Object.create(Object.getPrototypeOf(root._model_)), root._model_);

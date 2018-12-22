@@ -30,6 +30,7 @@ export default class App extends Component<Props> {
         // ship.user_id=1;
         // await ship.save(this,false);
         let data=await UserModel.find(new UserModel())
+            .select("*,User.id")
             .joinWith('ships.numbers')
             .all();
 
