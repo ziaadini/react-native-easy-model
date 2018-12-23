@@ -4,8 +4,10 @@ export default class ActiveQuery {
     _selectParams = "*";
     _where = "";
     _on = "";
+    _group_by = "";
     _whereParams = [];
     _onParams = [];
+    _is_multiple = false;//for eager loading
     _limit = null;
     _offset = null;
     _order = null;
@@ -14,7 +16,9 @@ export default class ActiveQuery {
     _link = {};
     _add_tablename_to_link = true;
     static _isJoin = false;//if  it's not join then add _link to where condition else add _link to on condition
-    _joinBlock = "";//when joinWidth method called this method build _joinBlock variable
+    _joinBlock = "";//when joinWith method called this method build _joinBlock variable
+    _queue = [];//hold all relation name called. each joinWith call in one array
+
     constructor(instance = "", modelInstance) {
         this._tableName = instance.tableName();
         this.instance = instance;
@@ -25,6 +29,9 @@ export default class ActiveQuery {
             this.instance.openDb();
             this.db = this.instance.db;
         }
+        if (this._add_tablename_to_link) {
+            this._selectParams = this._tableName + "." + "*";
+        }
     }
 
     select(params = "*") {
@@ -32,6 +39,15 @@ export default class ActiveQuery {
             this._selectParams = imploade(",", params);
         } else {
             this._selectParams = params;
+        }
+        return this;
+    }
+
+    groupBy(columns) {
+        if (typeof columns === "object") {
+            this._group_by += imploade(",", columns);
+        } else {
+            this._group_by += columns;
         }
         return this;
     }
@@ -72,6 +88,9 @@ export default class ActiveQuery {
         }
         if (this._where !== "") {
             sql += " WHERE " + this._where;
+        }
+        if (this._group_by) {
+            sql += " GROUP BY " + this._group_by;
         }
         if (this._order) {
             sql += " ORDER BY " + this._order;
@@ -207,11 +226,15 @@ export default class ActiveQuery {
     }
 
 
-    joinWith(relationName, type = "LEFT JOIN") {
+    joinWith(relationName, eagerLoading = true, type = "LEFT JOIN") {
         let model = this._model_;
         let relationNames = relationName.split(".");
         this.constructor._isJoin = true;
-
+        let i = 0;
+        if (eagerLoading) {
+            i = this._queue.length;//index for push to queue array
+            this._queue[i] = {};
+        }
         for (let key in relationNames) {
             let rel = relationNames[key];
             let obj = model[rel](false);//call relation to get active query object
@@ -223,8 +246,12 @@ export default class ActiveQuery {
             if (obj._where) {
                 this._where += this._where !== "" ? ` AND(${obj._where})` : obj._where;
             }
-            this._onParams=this._onParams.concat(obj._onParams);
-            this._whereParams=this._whereParams.concat(obj._whereParams);
+            this._onParams = this._onParams.concat(obj._onParams);
+            this._whereParams = this._whereParams.concat(obj._whereParams);
+            if (eagerLoading) {
+                //TODO process queue to load nested data by sql
+                this._queue[i][rel] = obj;
+            }
             model = obj._model_;
         }
         this.constructor._isJoin = false;

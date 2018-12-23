@@ -513,6 +513,7 @@ export class Model {
 
     hasMany(TargetInstance, link, getData = false) {
         let query = this._createRelationQuery(TargetInstance, link);
+        query._is_multiple=true;
         if (getData) {
             return query.all();
         }
@@ -521,6 +522,7 @@ export class Model {
 
     hasOne(TargetInstance, link, getData = false) {
         let query = this._createRelationQuery(TargetInstance, link);
+        query._is_multiple=false;
         if (getData) {
             return query.one();
         }
