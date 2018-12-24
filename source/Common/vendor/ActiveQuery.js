@@ -225,8 +225,21 @@ export default class ActiveQuery {
         // this._where="("+this._where+")";
     }
 
+    _get_object_by_relation_name(model,relationName){
+        return model[relationName](false);
+    }
+    _add_relation_object_to_join_block(obj,type){
+        obj._handleLink(obj._tableName);
+        this._joinBlock += ` ${type} ` + obj._tableName + " " + "ON" + " " + obj._on;
+        if (obj._where) {
+            this._where += this._where !== "" ? ` AND(${obj._where})` : obj._where;
+        }
+        this._onParams = this._onParams.concat(obj._onParams);
+        this._whereParams = this._whereParams.concat(obj._whereParams);
+    }
 
     joinWith(relationName, eagerLoading = true, type = "LEFT JOIN") {
+        //toDO consider relatioName as array and sort it then build join query and eager loading object by skipe repeatetive data [order,order.orderDetails] : order is repeatetive
         let model = this._model_;
         let relationNames = relationName.split(".");
         this.constructor._isJoin = true;
@@ -237,17 +250,10 @@ export default class ActiveQuery {
         }
         for (let key in relationNames) {
             let rel = relationNames[key];
-            let obj = model[rel](false);//call relation to get active query object
-            // console.log('model is : ', model);
-            // console.log('rel is : ', rel);
-            obj._handleLink(obj._tableName);
-            // console.log('obj is : ', obj);
-            this._joinBlock += ` ${type} ` + obj._tableName + " " + "ON" + " " + obj._on;
-            if (obj._where) {
-                this._where += this._where !== "" ? ` AND(${obj._where})` : obj._where;
-            }
-            this._onParams = this._onParams.concat(obj._onParams);
-            this._whereParams = this._whereParams.concat(obj._whereParams);
+            let obj = this._get_object_by_relation_name(model,rel);//call relation to get active query object
+            console.log('obj is : ',obj);
+            this._add_relation_object_to_join_block(obj,type);
+
             if (eagerLoading) {
                 //TODO process queue to load nested data by sql
                 this._queue[i][rel] = obj;
