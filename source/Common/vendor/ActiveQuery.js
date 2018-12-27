@@ -225,10 +225,11 @@ export default class ActiveQuery {
         // this._where="("+this._where+")";
     }
 
-    _get_object_by_relation_name(model,relationName){
+    _get_object_by_relation_name(model, relationName) {
         return model[relationName](false);
     }
-    _add_relation_object_to_join_block(obj,type){
+
+    _add_relation_object_to_join_block(obj, type) {
         obj._handleLink(obj._tableName);
         this._joinBlock += ` ${type} ` + obj._tableName + " " + "ON" + " " + obj._on;
         if (obj._where) {
@@ -238,28 +239,59 @@ export default class ActiveQuery {
         this._whereParams = this._whereParams.concat(obj._whereParams);
     }
 
-    joinWith(relationName, eagerLoading = true, type = "LEFT JOIN") {
-        //toDO consider relatioName as array and sort it then build join query and eager loading object by skipe repeatetive data [order,order.orderDetails] : order is repeatetive
-        let model = this._model_;
-        let relationNames = relationName.split(".");
-        this.constructor._isJoin = true;
-        let i = 0;
-        if (eagerLoading) {
-            i = this._queue.length;//index for push to queue array
-            this._queue[i] = {};
-        }
+    /*
+    get array of relationNames and a instance of first item model and join type
+     */
+    processRelation(relationNames, startModel, type) {
+        let modelQueue=[];
+        modelQueue[0]=startModel;
         for (let key in relationNames) {
             let rel = relationNames[key];
-            let obj = this._get_object_by_relation_name(model,rel);//call relation to get active query object
-            console.log('obj is : ',obj);
-            this._add_relation_object_to_join_block(obj,type);
-
-            if (eagerLoading) {
-                //TODO process queue to load nested data by sql
-                this._queue[i][rel] = obj;
-            }
-            model = obj._model_;
+            let obj = this._get_object_by_relation_name(startModel, rel);//call relation to get active query object
+            this._add_relation_object_to_join_block(obj, type);
+            startModel = obj._model_;
+            modelQueue[Number(key)+1]=obj._model_;
         }
+        return modelQueue;
+    }
+
+    _getUnequalIndex(rel, prevRel) {//prevRel is smaller than rel length
+        let key = prevRel.length;
+        let i=0;
+        for ( i ; i < key; i++) {
+            if (prevRel[i] !== rel[i]) {
+               return i;
+            }
+        }
+        return i;
+    }
+
+    joinWith(relationName, eagerLoading = true, type = "LEFT JOIN") {
+        this.constructor._isJoin = true;
+
+        if (typeof relationName === "object") {
+            if (relationName.length === 1) {
+                this.processRelation(relationName[0].split("."), this._model_, type);
+            } else {
+                relationName.sort();
+                let modelQueue=[];
+                for (let i in relationName) {
+                    let relList = relationName[i].split('.');
+                    if (prevRel === undefined) {
+                         modelQueue=this.processRelation(relList, this._model_, type);
+                    } else {
+                        let index=this._getUnequalIndex(relList,prevRel);
+                        console.log(index,modelQueue);
+                        modelQueue=this.processRelation(relList.slice(index),modelQueue[index],type);
+                    }
+                    let prevRel = relList.slice();
+                }
+            }
+        } else {
+            this.processRelation(relationName.split("."), this._model_, type);
+        }
+
+
         this.constructor._isJoin = false;
         return this;
     }
